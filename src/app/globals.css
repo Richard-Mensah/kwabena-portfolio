@@ -1,26 +1,371 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/*
+ * COLOUR SYSTEM — derived from Kwabena's own graduation portrait:
+ * ivory paper, a navy suit, a red-orange tie and an ochre breeze-block wall.
+ *
+ *  60%  Ivory (+ deep ivory / sand tints)  — calm, warm ground for the artwork
+ *  30%  Ink & Navy                        — structure, type, dark sections
+ *  10%  Signal red-orange                 — action, focus, emphasis
+ *
+ * Navy and signal sit opposite each other on the colour wheel (blue ↔ orange):
+ * a complementary pair that makes calls-to-action vibrate against dark panels,
+ * while ochre and sand form an analogous, warm family with the signal.
+ * Text colours are chosen to meet WCAG AA on the grounds they are used on:
+ *  ink on ivory 16.4:1 · muted on ivory 6.4:1 · signal-deep on ivory 5.4:1
+ *  ivory on navy 13.6:1 · ivory on ink 16.4:1
+ */
+@theme {
+  --color-ivory: #f5f2eb;
+  --color-ivory-deep: #ece6d9;
+  --color-sand: #ead9b6;
+  --color-ochre: #d9a44e;
+  --color-ink: #171717;
+  --color-navy: #1b2540;
+  --color-navy-soft: #2a3761;
+  --color-stone: #a7a49d;
+  --color-muted: #5c5952;
+  --color-paper: #ffffff;
+  --color-signal: #e64b32;
+  --color-signal-deep: #b93a23;
+
+  --font-sans: var(--font-inter-tight), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-instrument-serif), ui-serif, Georgia, serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  html {
+    background: var(--color-ivory);
+    color: var(--color-ink);
+    -webkit-text-size-adjust: 100%;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+  body {
+    font-family: var(--font-sans);
+    font-size: 1.0625rem;
+    line-height: 1.65;
+    font-feature-settings: "ss01", "cv11";
+    text-rendering: optimizeLegibility;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    text-wrap: balance;
+  }
+  p {
+    text-wrap: pretty;
+  }
+  ::selection {
+    background: var(--color-signal);
+    color: var(--color-paper);
+  }
+  section[id] {
+    scroll-margin-top: 5rem;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-signal);
+    outline-offset: 3px;
+    border-radius: 2px;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* ---------------- TYPE SCALE (one source of truth) ---------------- */
+/* Hero name — fills the viewport width */
+@utility t-hero {
+  font-weight: 600;
+  font-size: clamp(3.4rem, 15.5vw, 6rem);
+  line-height: 0.86;
+  letter-spacing: -0.055em;
+  @media (width >= 48rem) {
+    font-size: clamp(5rem, 9.2vw, 10.5rem);
+  }
+}
+/* Page titles */
+@utility t-page {
+  font-weight: 600;
+  font-size: clamp(3rem, 8.4vw, 8.75rem);
+  line-height: 0.9;
+  letter-spacing: -0.05em;
+}
+/* Section titles */
+@utility t-display {
+  font-weight: 600;
+  font-size: clamp(2.5rem, 5.6vw, 5.75rem);
+  line-height: 0.94;
+  letter-spacing: -0.045em;
+}
+@utility t-h2 {
+  font-weight: 600;
+  font-size: clamp(1.9rem, 3.4vw, 3.25rem);
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+}
+@utility t-h3 {
+  font-weight: 600;
+  font-size: clamp(1.35rem, 1.9vw, 1.75rem);
+  line-height: 1.15;
+  letter-spacing: -0.025em;
+}
+@utility t-lead {
+  font-size: clamp(1.2rem, 1.55vw, 1.5rem);
+  line-height: 1.45;
+  letter-spacing: -0.012em;
+}
+@utility t-body {
+  font-size: 1.0625rem;
+  line-height: 1.7;
+}
+@utility t-small {
+  font-size: 0.9375rem;
+  line-height: 1.55;
+}
+@utility t-label {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  line-height: 1.3;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+/* Editorial serif accent inside sans headlines (optically matched) */
+@utility serif-accent {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -0.015em;
+  font-size: 1.04em;
+}
+@utility measure {
+  max-width: 62ch;
+}
+
+/* Subtle print-like grain */
+.grain::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 60;
+  opacity: 0.045;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Breeze-block pattern (circular apertures) — the brand motif */
+.breeze {
+  background-image: radial-gradient(circle at center, currentColor 0 34%, transparent 35%);
+  background-size: 22px 22px;
+}
+
+/* ---------- Intro loader (pure CSS so it never blocks without JS) ---------- */
+.loader {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  background: var(--color-navy);
+  color: var(--color-ivory);
+  animation: loader-out 0.9s var(--ease-expo) 1.45s forwards;
+}
+.loader-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 10px;
+}
+.loader-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  border: 1.5px solid color-mix(in oklab, var(--color-ivory) 35%, transparent);
+  transform: scale(0);
+  animation: dot-in 0.5s var(--ease-expo) forwards;
+  animation-delay: calc(var(--i) * 16ms);
+}
+.loader-dot[data-on="1"] {
+  background: var(--color-ivory);
+  border-color: var(--color-ivory);
+}
+.loader-dot[data-accent="1"] {
+  background: var(--color-signal);
+  border-color: var(--color-signal);
+}
+.loader-caption {
+  opacity: 0;
+  animation: fade-in 0.6s ease 0.6s forwards;
+}
+@keyframes dot-in {
+  to {
+    transform: scale(1);
+  }
+}
+@keyframes fade-in {
+  to {
+    opacity: 1;
+  }
+}
+@keyframes loader-out {
+  to {
+    clip-path: inset(0 0 100% 0);
+    visibility: hidden;
+  }
+}
+html.ka-seen .loader,
+html.ka-calm .loader {
+  display: none;
+}
+
+/* Floating artwork in the hero */
+@keyframes bob {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -12px, 0);
+  }
+}
+.bob {
+  animation: bob var(--bob, 7s) ease-in-out infinite;
+}
+
+@keyframes marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+.marquee {
+  animation: marquee 40s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loader {
+    display: none;
+  }
+  .marquee,
+  .bob {
+    animation: none;
+  }
+}
+
+/* Hide the native cursor only when the custom cursor is active */
+html.ka-cursor,
+html.ka-cursor * {
+  cursor: none !important;
+}
+
+/* Horizontal rail: hide scrollbar, keep it scrollable */
+.rail {
+  scrollbar-width: none;
+}
+.rail::-webkit-scrollbar {
+  display: none;
+}
+
+/* View transitions: artwork morph */
+::view-transition-group(*) {
+  animation-duration: 0.6s;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Legacy aliases (kept so older class names map onto the scale) */
+@utility label-mono {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  line-height: 1.3;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+/* ---------------- DEPTH: brand mesh gradients ----------------
+ * Built only from palette colours (navy, navy-soft, signal, ochre, sand) so
+ * the 60-30-10 balance holds; blobs drift slowly and stop under reduced motion. */
+.mesh-navy {
+  background:
+    radial-gradient(40% 50% at 12% 18%, color-mix(in oklab, var(--color-signal) 28%, transparent), transparent 70%),
+    radial-gradient(45% 55% at 88% 78%, color-mix(in oklab, var(--color-ochre) 22%, transparent), transparent 72%),
+    radial-gradient(60% 60% at 60% 30%, color-mix(in oklab, var(--color-navy-soft) 80%, transparent), transparent 75%);
+  animation: mesh-drift 22s ease-in-out infinite alternate;
+  background-size: 140% 140%;
+}
+.mesh-navy-card {
+  background:
+    radial-gradient(70% 70% at 100% 0%, color-mix(in oklab, var(--color-signal) 35%, transparent), transparent 60%),
+    radial-gradient(70% 70% at 0% 100%, color-mix(in oklab, var(--color-ochre) 25%, transparent), transparent 60%),
+    linear-gradient(160deg, var(--color-navy-soft), var(--color-navy));
+}
+.mesh-warm {
+  background:
+    radial-gradient(45% 55% at 85% 15%, color-mix(in oklab, var(--color-ochre) 30%, transparent), transparent 70%),
+    radial-gradient(40% 50% at 10% 85%, color-mix(in oklab, var(--color-signal) 12%, transparent), transparent 70%),
+    radial-gradient(70% 70% at 50% 50%, color-mix(in oklab, var(--color-sand) 55%, transparent), transparent 80%);
+  animation: mesh-drift 26s ease-in-out infinite alternate;
+  background-size: 140% 140%;
+}
+@keyframes mesh-drift {
+  0% {
+    background-position: 0% 0%;
+  }
+  100% {
+    background-position: 100% 100%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mesh-navy,
+  .mesh-warm {
+    animation: none;
+  }
+}
+html.ka-calm .mesh-navy,
+html.ka-calm .mesh-warm {
+  animation: none;
+}
+
+/* Text with a moving gold/signal sheen for key numbers */
+.sheen-text {
+  background: linear-gradient(100deg, var(--color-ivory) 20%, var(--color-ochre) 45%, var(--color-signal) 55%, var(--color-ivory) 80%);
+  background-size: 250% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: sheen 6s ease-in-out infinite;
+}
+@keyframes sheen {
+  0%,
+  100% {
+    background-position: 100% 0;
+  }
+  50% {
+    background-position: 0% 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sheen-text {
+    animation: none;
+  }
+}
+
+/* ---------------- BRAND FLAME (from Kwabena's logo) ----------------
+ * Amber #FDB202 -> orange #FE6305 -> red-orange #FC3902. Used for motion,
+ * progress and the closing CTA. Text on it stays ink (>= 4.5:1). */
+@theme {
+  --color-flame-amber: #fdb202;
+  --color-flame-orange: #fe6305;
+  --color-flame-red: #fc3902;
+}
+.bg-flame {
+  background-image: linear-gradient(115deg, var(--color-flame-amber) 0%, var(--color-flame-orange) 55%, var(--color-flame-red) 100%);
+}
+.text-flame {
+  background-image: linear-gradient(100deg, var(--color-flame-amber), var(--color-flame-orange) 60%, var(--color-flame-red));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
